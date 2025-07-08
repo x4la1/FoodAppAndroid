@@ -40,8 +40,6 @@ import org.intellij.lang.annotations.JdkConstants
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         setRequestedOrientation(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
-        val fs = Firebase.firestore
-
         super.onCreate(savedInstanceState)
         setContent {
             AppNavHost()

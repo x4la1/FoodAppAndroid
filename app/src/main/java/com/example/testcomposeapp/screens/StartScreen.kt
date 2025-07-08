@@ -58,12 +58,14 @@ import com.example.testcomposeapp.ui.theme.PinkGradient
 import com.example.testcomposeapp.ui.theme.White
 import com.example.testcomposeapp.ui.theme.lobster
 import com.example.testcomposeapp.ui.theme.roboto
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import java.nio.file.WatchEvent
 
 @Composable
 fun StartScreen(navController: NavHostController) {
 
-
+    val auth = Firebase.auth
     val gradientBrush = Brush.linearGradient(
         colors = listOf(
             PinkGradient,
@@ -94,7 +96,11 @@ fun StartScreen(navController: NavHostController) {
         Spacer(Modifier.size(height = 150.dp, width = 10.dp))
         Button(
             onClick = {
-                navController.navigate(route = NavRoute.LoginScreen.route)
+                if (auth.currentUser != null) {
+                    navController.navigate(route = NavRoute.HomeScreen.route)
+                } else {
+                    navController.navigate(route = NavRoute.LoginScreen.route)
+                }
             },
             modifier = Modifier
                 .width(200.dp)

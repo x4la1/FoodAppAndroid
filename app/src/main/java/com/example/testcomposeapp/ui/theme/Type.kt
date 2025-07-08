@@ -43,3 +43,13 @@ val roboto = FontFamily(
     Font(R.font.roboto_condensed_regular, FontWeight.Normal),
     Font(R.font.roboto_condensed_semibold, FontWeight.SemiBold)
 )
+
+val poppins = FontFamily(
+    Font(R.font.poppins_medium, FontWeight.Normal)
+)
+
+val inter = FontFamily(
+    Font(R.font.inter_18pt_regular, FontWeight.Normal),
+    Font(R.font.inter_18pt_bold, FontWeight.Bold),
+    Font(R.font.inter_18pt_semibold, FontWeight.SemiBold),
+)
