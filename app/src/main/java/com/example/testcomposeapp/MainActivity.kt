@@ -36,6 +36,7 @@ import com.example.testcomposeapp.ui.theme.TestComposeAppTheme
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import org.intellij.lang.annotations.JdkConstants
+import prevUser
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

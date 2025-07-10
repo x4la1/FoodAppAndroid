@@ -145,11 +145,6 @@ fun StartScreen(navController: NavHostController) {
 
 
             )
-
-            //Image()
         }
-
-//
     }
-
 }

@@ -1,5 +1,6 @@
 package com.example.testcomposeapp.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.testcomposeapp.data.OrderUnit
 import com.example.testcomposeapp.data.Product
@@ -17,6 +18,7 @@ class OrderViewModel : ViewModel() {
         if (existingItem != null) {
             if (existingItem.count < 10) {
                 existingItem.count += 1
+                Log.d("MyLog", "Product +1")
             }
         } else {
             currentOrder.add(OrderUnit(product))
@@ -24,19 +26,27 @@ class OrderViewModel : ViewModel() {
         _orderItems.value = currentOrder
     }
 
-    fun decFromOrder(product: Product) {
+    fun decFromOrder(productUid: String) {
         val currentOrder = _orderItems.value.toMutableList()
-        val existingItem = currentOrder.find { it.product.uid == product.uid }
-        if (existingItem != null && existingItem.count > 0) {
+        val existingItem = currentOrder.find { it.product.uid == productUid }
+        if (existingItem != null && existingItem.count == 1) {
+            removeFromOrder(productUid)
+        } else if (existingItem != null && existingItem.count > 1) {
             existingItem.count -= 1
+            Log.d("MyLog", "Product -1")
+            _orderItems.value = currentOrder
         }
-
-        _orderItems.value = currentOrder
     }
+
+    fun getProductCount(productUid: String): Int {
+        return _orderItems.value.find { it.product.uid == productUid }?.count ?: 0
+    }
+
 
     fun removeFromOrder(productUid: String) {
         val currentOrder = _orderItems.value.toMutableList()
         currentOrder.removeAll { it.product.uid == productUid }
+        Log.d("MyLog", "Remove from order")
         _orderItems.value = currentOrder
     }
 
@@ -45,6 +55,9 @@ class OrderViewModel : ViewModel() {
     }
 
     fun getTotalPrice(): Double {
-        return _orderItems.value.sumOf { it.product.price.toDoubleOrNull() ?: (0.0 * it.count) }
+        return _orderItems.value.sumOf { orderUnit ->
+            val price = orderUnit.product.price.toDoubleOrNull() ?: 0.0
+            price * orderUnit.count
+        }
     }
 }

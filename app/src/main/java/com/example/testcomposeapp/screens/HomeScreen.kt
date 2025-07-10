@@ -1,8 +1,5 @@
 package com.example.testcomposeapp.screens
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.util.Base64
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -10,7 +7,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -19,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -28,13 +23,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,21 +34,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
 import com.example.testcomposeapp.R
 import com.example.testcomposeapp.data.Product
+import com.example.testcomposeapp.data.User
+import com.example.testcomposeapp.navigation.NavRoute
 import com.example.testcomposeapp.ui.theme.BlackBrown
 import com.example.testcomposeapp.ui.theme.DefaultRed
-import com.example.testcomposeapp.ui.theme.GrayText
 import com.example.testcomposeapp.ui.theme.GrayText2
 import com.example.testcomposeapp.ui.theme.White
 import com.example.testcomposeapp.ui.theme.inter
@@ -65,9 +56,9 @@ import com.example.testcomposeapp.ui.theme.lobster
 import com.example.testcomposeapp.ui.theme.poppins
 import com.example.testcomposeapp.ui.theme.roboto
 import com.example.testcomposeapp.utils.base64ToBitmap
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import java.io.ByteArrayInputStream
 
 @Composable
 fun HomeScreen(navController: NavHostController) {
@@ -77,13 +68,36 @@ fun HomeScreen(navController: NavHostController) {
         mutableStateOf(emptyList<Product>())
     }
 
+    Log.d("MyLog", "home")
+
     fs.collection("products").get().addOnCompleteListener { task ->
         if (task.isSuccessful) {
             products.value = task.result.toObjects(Product::class.java)
+            Log.d("MyLog", "Products get OK")
         } else {
             Log.d("MyLog", "${task.exception?.message}")
         }
     }
+
+    val user = remember {
+        mutableStateOf(User())
+    }
+
+    val auth = Firebase.auth
+    val avatarBase64: String = ""
+
+    val authUser = auth.currentUser
+    if (authUser != null) {
+        fs.collection("users").document(authUser.uid).get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                user.value = task.result.toObject(User::class.java)!!
+                Log.d("MyLog", "User get OK")
+            } else {
+                Log.d("MyLog", "User get BAD, ${task.exception?.message}")
+            }
+        }
+    }
+
 
     var selectedCategory by remember {
         mutableStateOf("All")
@@ -106,6 +120,7 @@ fun HomeScreen(navController: NavHostController) {
             BottomAppBar(
                 modifier = Modifier
                     .height(70.dp)
+                    .fillMaxWidth()
                     .background(DefaultRed),
                 actions = {
                     Row(
@@ -121,40 +136,45 @@ fun HomeScreen(navController: NavHostController) {
                         )
                         {
                             Icon(
-                                painter = painterResource(R.drawable.home),
+                                painter = painterResource(R.drawable.ic_home),
                                 contentDescription = "HomeIcon",
+                                tint = White,
                                 modifier = Modifier
                                     .clickable {
 
                                     }
                             )
                             Icon(
-                                painter = painterResource(R.drawable.dot),
+                                painter = painterResource(R.drawable.ic_dot),
                                 contentDescription = "DotIcon",
+                                tint = White,
                                 modifier = Modifier
                                     .padding(top = 8.dp)
                             )
                         }
 
                         Icon(
-                            painter = painterResource(R.drawable.user),
+                            painter = painterResource(R.drawable.ic_user),
                             contentDescription = "UserIcon",
+                            tint = White,
                             modifier = Modifier
                                 .clickable {
-
+                                    navController.navigate(NavRoute.UserProfileScreen.route)
                                 }
                         )
                         Icon(
-                            painter = painterResource(R.drawable.shopping_cart),
+                            painter = painterResource(R.drawable.ic_shopping_cart),
                             contentDescription = "CartIcon",
+                            tint = White,
                             modifier = Modifier
                                 .clickable {
-
+                                    navController.navigate(NavRoute.PaymentScreen.route)
                                 }
                         )
                         Icon(
-                            painter = painterResource(R.drawable.heart),
+                            painter = painterResource(R.drawable.ic_heart),
                             contentDescription = "HeartIcon",
+                            tint = White,
                             modifier = Modifier
                                 .clickable {
 
@@ -186,13 +206,18 @@ fun HomeScreen(navController: NavHostController) {
                     fontSize = 45.sp,
                     color = BlackBrown,
                 )
-                Image(
-                    painter = painterResource(R.drawable.avatar_preview_big),
-                    contentDescription = "img2",
-                    modifier = Modifier
-                        .size(height = 60.dp, width = 60.dp)
-                        .clip(RoundedCornerShape(20.dp)),
-                )
+
+                base64ToBitmap(user.value.imageBase64)?.let {
+                    Image(
+                        bitmap = it,
+                        contentDescription = "img2",
+                        modifier = Modifier
+                            .size(height = 60.dp, width = 60.dp)
+                            .clip(RoundedCornerShape(20.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
             }
             Text(
                 text = "Order your favourite food!",
@@ -292,7 +317,7 @@ fun HomeScreen(navController: NavHostController) {
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Image(
-                                        bitmap = base64ToBitmap(product.imageBase64)!!.asImageBitmap(),
+                                        bitmap = base64ToBitmap(product.imageBase64)!!,
                                         contentDescription = "img",
                                         modifier = Modifier
                                             .size(120.dp)
@@ -333,7 +358,7 @@ fun HomeScreen(navController: NavHostController) {
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Image(
-                                                painter = painterResource(R.drawable.star),
+                                                painter = painterResource(R.drawable.ic_star),
                                                 contentDescription = "img"
                                             )
                                             Text(

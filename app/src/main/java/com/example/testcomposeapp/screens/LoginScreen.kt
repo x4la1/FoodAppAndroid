@@ -39,6 +39,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.testcomposeapp.data.User
 import com.example.testcomposeapp.navigation.NavRoute
 import com.example.testcomposeapp.ui.theme.BlackBrown
 import com.example.testcomposeapp.ui.theme.DefaultRed
@@ -49,6 +50,7 @@ import com.example.testcomposeapp.ui.theme.roboto
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
 
 
 @Composable
@@ -259,10 +261,21 @@ private fun signUp(
         .addOnCompleteListener {
             if (it.isSuccessful) {
                 Log.d("MyLog", "Sign Up Successful")
+
+                val fs = Firebase.firestore
+                val user = it.result.user
+                val uid = user?.uid ?: ""
+                fs.collection("users").document(uid).set(User(uid = uid))
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Log.d("MyLog", "User save OK")
+                        } else {
+                            Log.d("MyLog", "User save BAD, ${task.exception?.message}")
+                        }
+                    }
                 navController.navigate(route = NavRoute.HomeScreen.route)
             } else {
                 Log.d("MyLog", "Sign Up Error, ${it.exception?.message}")
-
             }
         }
 }
@@ -283,6 +296,7 @@ private fun signIn(
             }
         }
 }
+
 
 
 
